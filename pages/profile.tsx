@@ -343,7 +343,7 @@ function ProfilePage() {
                 <label className="block text-sm font-medium text-gray-700">Tranche d'âge du partenaire recherché</label>
                 <div className="flex space-x-2">
                   <select
-                    className="select select-bordered w-1/2 bg-gray-50 border-gray-300 text-gray-700 select-age"
+                    className="select select-bordered w-1/2 bg-gray-50 border-gray-300 text-gray-700"
                     value={profileData.partnerAgeRange.min}
                     onChange={(e) =>
                       setProfileData({
@@ -357,7 +357,7 @@ function ProfilePage() {
                     ))}
                   </select>
                   <select
-                    className="select select-bordered w-1/2 bg-gray-50 border-gray-300 text-gray-700 select-age"
+                    className="select select-bordered w-1/2 bg-gray-50 border-gray-300 text-gray-700"
                     value={profileData.partnerAgeRange.max}
                     onChange={(e) =>
                       setProfileData({

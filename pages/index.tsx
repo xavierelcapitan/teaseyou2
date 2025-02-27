@@ -213,7 +213,7 @@ const HomePage: React.FC = () => {
         {/* Section Score */}
         <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 bg-[#D4AF37] text-white py-2 px-4 rounded-full flex items-center space-x-2 border border-white">
           <span className="text-lg font-bold">{completionPercentage}%</span>
-          <span className="text-medium">Profil complet</span>
+          <span className="text-lg">Profil complet</span>
         </div>
       </div>
 
