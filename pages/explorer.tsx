@@ -5,6 +5,7 @@ import { app } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import FilterModal from '../components/FilterModal';
 import Loader from '../components/Loader';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 const db = getFirestore(app);
 
@@ -33,6 +34,12 @@ const ProfileCard: React.FC<{ profile: any; isFavorite: boolean; isViewed: boole
           backgroundPosition: 'center',
         }}
       >
+        <LazyLoadImage
+          alt={`${profile.firstName}, ${profile.age}`}
+          src={profile.imageURL}
+          effect="blur"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-b-xl">
           {profile.percentage}%
         </div>
@@ -120,16 +127,14 @@ const ExplorerPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
-      <div className="flex justify-between items-center p-4 bg-white shadow-md">
-        <button onClick={() => router.push('/')} className="text-[#FF5F6D]">
-          <span className="material-icons text-3xl">arrow_back_ios</span>
-        </button>
+      <div className="flex justify-between items-center p-4 px-7 bg-white shadow-md">
+        <span className="text-2xl font-bold text-[#FF5F6D]">{filteredProfiles.length}</span>
         <h1 className="text-2xl font-bold text-center text-[#FF5F6D]">Explorer</h1>
         <button onClick={handleFilters} className="text-[#FF5F6D]">
           <span className="material-icons text-3xl">tune</span>
         </button>
       </div>
-      <div className="flex-grow grid grid-cols-2 gap-4 gap-y-4 p-4 pb-24">
+      <div className="flex-grow grid grid-cols-2 gap-2 gap-y-4 p-4 pb-24">
         {filteredProfiles.length === 0 ? (
           <div className="text-center text-gray-500 col-span-2">
             Aucun résultat, essayez d'autres filtres.
