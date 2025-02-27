@@ -140,6 +140,12 @@ function ProfilePage() {
     e.preventDefault();
     if (user) {
       try {
+        // Vérification des champs obligatoires
+        if (!profileData.firstName || !profileData.age || !profileData.city || !profileData.gender || !profileData.imageURL) {
+          alert("Veuillez remplir tous les champs obligatoires.");
+          return;
+        }
+
         const completionPercentage = calculateCompletionPercentage();
 
         // Upload de l'image si présente
@@ -238,6 +244,7 @@ function ProfilePage() {
                     className="select select-bordered w-full bg-gray-50 border-gray-300 text-gray-700"
                     value={profileData.gender}
                     onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
+                    required
                   >
                     <option value="">---</option>
                     <option>Homme</option>
@@ -336,7 +343,7 @@ function ProfilePage() {
                 <label className="block text-sm font-medium text-gray-700">Tranche d'âge du partenaire recherché</label>
                 <div className="flex space-x-2">
                   <select
-                    className="select select-bordered w-1/2 bg-gray-50 border-gray-300 text-gray-700"
+                    className="select select-bordered w-1/2 bg-gray-50 border-gray-300 text-gray-700 select-age"
                     value={profileData.partnerAgeRange.min}
                     onChange={(e) =>
                       setProfileData({
@@ -350,7 +357,7 @@ function ProfilePage() {
                     ))}
                   </select>
                   <select
-                    className="select select-bordered w-1/2 bg-gray-50 border-gray-300 text-gray-700"
+                    className="select select-bordered w-1/2 bg-gray-50 border-gray-300 text-gray-700 select-age"
                     value={profileData.partnerAgeRange.max}
                     onChange={(e) =>
                       setProfileData({
@@ -376,6 +383,7 @@ function ProfilePage() {
               accept="image/*"
               onChange={handleImageChange}
               className="file-input w-full bg-gray-50 border-gray-300 focus:border-[#E63946] focus:ring-[#E63946]"
+              required
             />
           </div>
 

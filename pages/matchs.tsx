@@ -26,8 +26,11 @@ const MatchCard: React.FC<{ profile: any }> = ({ profile }) => {
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
         <div className="relative text-white p-2 text-center" style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)' }}>
+          <div className="inline-block bg-gray-700 bg-opacity-50 text-white text-xs font-bold px-2 py-1 rounded-full mb-1 border border-gray-300">
+            {profile.distance} km
+          </div>
           <h2 className="text-medium font-bold">{profile.firstName}, {profile.age}</h2>
           <p className="text-xs font-light text-gray-400">{profile.city}</p>
         </div>
