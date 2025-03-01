@@ -34,7 +34,21 @@ function ProfilePage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [fileCounter, setFileCounter] = useState(10);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [profileData, setProfileData] = useState<any>(null);
+  const [profileData, setProfileData] = useState({
+    email: '',
+    firstName: '',
+    age: '',
+    city: '',
+    imageURL: '',
+    gender: '',
+    relationshipType: '',
+    partnerGender: '',
+    partnerAgeRange: { min: 18, max: 99 },
+    bio: '',
+    interests: [] as string[],
+  });
+  const [cityQuery, setCityQuery] = useState('');
+  const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
 
   const interests = [
     "Art", "Astronomie", "Bricolage", "Cinéma", "Cuisine", "Danse", "Écriture", "Escalade", "Fitness", "Football",
@@ -52,9 +66,23 @@ function ProfilePage() {
           const docRef = doc(db, "users", user.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setProfileData(docSnap.data());
-            setBio(docSnap.data().bio || '');
-            setSelectedInterests(docSnap.data().interests || []);
+            const data = docSnap.data() as {
+              email: string;
+              firstName: string;
+              age: string;
+              city: string;
+              imageURL: string;
+              gender: string;
+              relationshipType: string;
+              partnerGender: string;
+              partnerAgeRange: { min: number; max: number };
+              bio: string;
+              interests: string[];
+            };
+            setProfileData(data);
+            setBio(data.bio || '');
+            setSelectedInterests(data.interests || []);
+            setCityQuery(data.city || '');
           }
         } catch (error) {
           console.error("Erreur lors de la récupération du profil :", error);
@@ -76,6 +104,25 @@ function ProfilePage() {
       router.push('/profile');
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      if (cityQuery.length > 2) { // Limiter les requêtes pour des saisies significatives
+        try {
+          const response = await fetch(`https://geo.api.gouv.fr/communes?nom=${cityQuery}&fields=nom,code,codeDepartement&limit=10`);
+          const data = await response.json();
+          setCitySuggestions(data);
+        } catch (error) {
+          console.error('Erreur lors de la récupération des villes:', error);
+        }
+      } else {
+        setCitySuggestions([]);
+      }
+    };
+
+    const debounceFetch = setTimeout(fetchCities, 300); // Debounce de 300ms
+    return () => clearTimeout(debounceFetch);
+  }, [cityQuery]);
 
   // Fonction pour uploader l'image
   const uploadFile = async (file: File, path: string) => {
@@ -111,6 +158,11 @@ function ProfilePage() {
 
   const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setBio(e.target.value);
+  };
+
+  const handleCitySelect = (city: any) => {
+    setCityQuery(city.nom);
+    setCitySuggestions([]);
   };
 
   // Calcul du taux de remplissage
@@ -199,12 +251,16 @@ function ProfilePage() {
           {/* Email en lecture seule */}
           <div className="mt-4 bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold text-[#FF5F6D] mb-4">Email (non modifiable)</h2>
-            <input
-              type="email"
-              className="input input-bordered w-full bg-gray-50 border-gray-300 text-[#E63946]"
-              value={profileData.email}
-              readOnly
-            />
+            {profileData && (
+              <input
+                type="email"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-3xl shadow-sm focus:outline-none focus:ring-[#FF5F6D] focus:border-[#FF5F6D] placeholder-white text-center"
+                placeholder="Email"
+                style={{ backgroundColor: '#E63946', color: 'white' }}
+                value={profileData.email}
+                readOnly
+              />
+            )}
           </div>
 
           {/* Informations Personnelles */}
@@ -249,13 +305,29 @@ function ProfilePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Ville</label>
-                <input
-                  type="text"
-                  className="input input-bordered w-full bg-gray-50 border-gray-300 text-[#E63946]"
-                  value={profileData.city}
-                  onChange={(e) => setProfileData({ ...profileData, city: e.target.value })}
-                  required
-                />
+                <div className="mb-4">
+                
+                  <input
+                    type="text"
+                    value={cityQuery}
+                    onChange={(e) => setCityQuery(e.target.value)}
+                    className="input input-bordered w-full bg-gray-50 border-gray-300 text-gray-700"
+                    placeholder="Rechercher une ville"
+                  />
+                  {citySuggestions.length > 0 && (
+                    <ul className="bg-white border border-gray-300 mt-2 rounded-md shadow-lg">
+                      {citySuggestions.map((city) => (
+                        <li
+                          key={city.code}
+                          onClick={() => handleCitySelect(city)}
+                          className="p-2 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {city.nom} ({city.codeDepartement})
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             </div>
           </div>

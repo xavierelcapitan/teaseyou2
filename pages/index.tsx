@@ -109,8 +109,10 @@ const HomePage: React.FC = () => {
           const docRef = doc(db, "users", user.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setProfileData(docSnap.data() as typeof profileData);
-            setCompletionPercentage(docSnap.data().completionPercentage || 0);
+            const data = docSnap.data() as { firstName: string; age: string; city: string; imageURL: string; completionPercentage?: number };
+            setProfileData(data);
+            setCompletionPercentage(data.completionPercentage || 0);
+            setProfileData(prevData => ({ ...prevData, city: data.city || '' }));
           } else {
             console.log("Aucune donnée de profil trouvée !");
           }
