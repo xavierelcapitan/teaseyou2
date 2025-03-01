@@ -21,6 +21,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply }) =
   const [relationshipType, setRelationshipType] = useState('');
   const [cityQuery, setCityQuery] = useState('');
   const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -47,9 +48,15 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply }) =
     );
   };
 
+  const handleCityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCityQuery(e.target.value);
+    setIsTyping(true);
+  };
+
   const handleCitySelect = (city: any) => {
     setCityQuery(city.nom);
     setCitySuggestions([]);
+    setIsTyping(false);
   };
 
   const handleApply = () => {
@@ -77,11 +84,11 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply }) =
           <input
             type="text"
             value={cityQuery}
-            onChange={(e) => setCityQuery(e.target.value)}
+            onChange={handleCityInputChange}
             className="input input-bordered w-full bg-gray-50 border-gray-300 text-gray-700"
             placeholder="Rechercher une ville"
           />
-          {citySuggestions.length > 0 && cityQuery.length > 2 && (
+          {citySuggestions.length > 0 && isTyping && cityQuery.length > 2 && (
             <ul className="bg-white border border-gray-300 mt-2 rounded-md shadow-lg">
               {citySuggestions.map((city) => (
                 <li
