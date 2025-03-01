@@ -81,7 +81,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply }) =
             className="input input-bordered w-full bg-gray-50 border-gray-300 text-gray-700"
             placeholder="Rechercher une ville"
           />
-          {citySuggestions.length > 0 && (
+          {citySuggestions.length > 0 && cityQuery.length > 2 && (
             <ul className="bg-white border border-gray-300 mt-2 rounded-md shadow-lg">
               {citySuggestions.map((city) => (
                 <li

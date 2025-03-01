@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { signIn } from '../lib/firebase';
 import { auth } from '../lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +17,18 @@ const LoginPage = () => {
     try {
       await signIn(email, password);
       console.log('Connexion réussie');
+
+      // Vérifier et sauvegarder l'email dans Firestore si nécessaire
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) {
+          await setDoc(docRef, { email: user.email });
+          console.log('Email sauvegardé dans Firestore');
+        }
+      }
+
       router.push('/'); // Rediriger vers la page d'accueil
     } catch (error: any) {
       console.error('Erreur lors de la connexion:', error);

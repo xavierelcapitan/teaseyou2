@@ -163,6 +163,7 @@ function ProfilePage() {
   const handleCitySelect = (city: any) => {
     setCityQuery(city.nom);
     setCitySuggestions([]);
+    setProfileData(prevData => ({ ...prevData, city: city.nom }));
   };
 
   // Calcul du taux de remplissage
