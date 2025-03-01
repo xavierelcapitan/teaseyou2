@@ -121,10 +121,8 @@ const ExplorerPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       <div className="flex justify-between items-center p-4 bg-white shadow-md">
-        <button onClick={() => router.push('/')} className="text-[#FF5F6D]">
-          <span className="material-icons text-3xl">arrow_back_ios</span>
-        </button>
-        <h1 className="text-2xl font-bold text-center text-[#FF5F6D]">Explorer</h1>
+       
+        <h1 className="text-2xl font-bold text-center text-[#FF5F6D]">Explorer : {filteredProfiles.length} </h1>
         <button onClick={handleFilters} className="text-[#FF5F6D]">
           <span className="material-icons text-3xl">tune</span>
         </button>
