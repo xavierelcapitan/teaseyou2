@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Règles pour la collection 'users'
+    match /users/{userId} {
+      allow read: if request.auth != null; // Permettre la lecture si l'utilisateur est authentifié
+      allow read, write: if request.auth != null && request.auth.uid == userId;// Permettre l'écriture si l'utilisateur est le propriétaire du document
+    }
+
+    // Règles pour la collection 'matches'
+    match /matches/{document=**} {
+      allow read: if request.auth != null;
+    }
+
+    // Règles pour la collection 'profileViews'
+    match /profileViews/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Règles pour la collection 'favorites'
+    match /favorites/{favoriteId} {
+      allow read, write: if request.auth != null; // Permettre la lecture et l'écriture si l'utilisateur est authentifié
+    }
+  }
+}
