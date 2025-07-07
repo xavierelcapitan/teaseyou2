@@ -13,7 +13,7 @@ const RegisterPage: React.FC = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const BETA_CODE = 'teaseyoubeta777';
+  const BETA_CODE = process.env.NEXT_PUBLIC_BETA_CODE || 'teaseyoubeta777';
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
