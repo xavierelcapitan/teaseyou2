@@ -1,24 +1,42 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { signIn } from '../lib/firebase';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(''); // Réinitialiser l'erreur
+    setMessage('');
     try {
-      await signIn(email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       console.log('Connexion réussie');
       router.push('/'); // Rediriger vers la page d'accueil
     } catch (error: any) {
       console.error('Erreur lors de la connexion:', error);
       setError('Houston, nous avons un problème ! Veuillez réessayer.');
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Veuillez entrer votre email d\'abord');
+      return;
+    }
+    
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setMessage('Email de réinitialisation envoyé ! Vérifiez votre boîte mail.');
+      setError('');
+    } catch (error: any) {
+      console.error('Erreur lors de l\'envoi de l\'email:', error);
+      setError('Erreur lors de l\'envoi de l\'email. Vérifiez votre adresse email.');
     }
   };
 
@@ -57,6 +75,9 @@ const LoginPage = () => {
         {error && (
           <p className="text-red-500 text-center mb-4">{error}</p>
         )}
+        {message && (
+          <p className="text-green-600 text-center mb-4">{message}</p>
+        )}
         <div className="flex justify-center">
           <button
             type="submit"
@@ -64,8 +85,32 @@ const LoginPage = () => {
             Se connecter
           </button>
         </div>
+        
+        {/* Liens sous le formulaire */}
+        <div className="mt-6 text-center space-y-3">
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            className="text-[#FF5F6D] hover:text-[#E54B5B] text-sm font-medium underline"
+          >
+            Mot de passe oublié ?
+          </button>
+          
+          <div className="text-gray-400">ou</div>
+          
+          <button
+            type="button"
+            onClick={() => router.push('/register')}
+            className="block w-full py-2 px-4 bg-[#D4AF37] text-white rounded-3xl shadow hover:bg-[#B8941F] transition duration-300"
+          >
+            S'inscrire à la béta
+          </button>
+        </div>
       </form>
-      <p className="text-center font-light text-[#777676] mt-20" style={{ fontFamily: 'Poppins, sans-serif' }}>uniquement sur invitation (pour l'instant)</p>
+      
+      <p className="text-center font-light text-[#777676] mt-8" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        Rejoignez la béta avec le code secret !
+      </p>
     </div>
   );
 };
