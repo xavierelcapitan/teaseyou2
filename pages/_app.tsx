@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 import { AuthProvider } from '../context/AuthContext';
 import ProtectedRoute from '../components/ProtectedRoute';
 
-const noAuthRequired = ['/login', '/register'];
+const noAuthRequired = ['/login', '/register', '/forgot-password'];
 
 export default function MyApp({ Component, pageProps, router }: AppProps) {
   return (

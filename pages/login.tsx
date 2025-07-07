@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(''); // Réinitialiser l'erreur
-    setMessage('');
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log('Connexion réussie');
@@ -21,22 +19,6 @@ const LoginPage = () => {
     } catch (error: any) {
       console.error('Erreur lors de la connexion:', error);
       setError('Houston, nous avons un problème ! Veuillez réessayer.');
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError('Veuillez entrer votre email d\'abord');
-      return;
-    }
-    
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setMessage('Email de réinitialisation envoyé ! Vérifiez votre boîte mail.');
-      setError('');
-    } catch (error: any) {
-      console.error('Erreur lors de l\'envoi de l\'email:', error);
-      setError('Erreur lors de l\'envoi de l\'email. Vérifiez votre adresse email.');
     }
   };
 
@@ -75,9 +57,6 @@ const LoginPage = () => {
         {error && (
           <p className="text-red-500 text-center mb-4">{error}</p>
         )}
-        {message && (
-          <p className="text-green-600 text-center mb-4">{message}</p>
-        )}
         <div className="flex justify-center">
           <button
             type="submit"
@@ -90,7 +69,7 @@ const LoginPage = () => {
         <div className="mt-6 text-center space-y-3">
           <button
             type="button"
-            onClick={handleForgotPassword}
+            onClick={() => router.push('/forgot-password')}
             className="text-[#FF5F6D] hover:text-[#E54B5B] text-sm font-medium underline"
           >
             Mot de passe oublié ?
