@@ -80,20 +80,54 @@ function ProfilePage() {
   // Fonction pour uploader l'image
   const uploadFile = async (file: File, path: string) => {
     try {
+      console.log('Début de l\'upload du fichier:', file.name, 'vers le chemin:', path);
+      
       const storageRef = ref(storage, path);
-      await uploadBytes(storageRef, file);
+      console.log('Référence de stockage créée');
+      
+      const uploadResult = await uploadBytes(storageRef, file);
+      console.log('Upload terminé:', uploadResult);
+      
       const downloadURL = await getDownloadURL(storageRef);
+      console.log('URL de téléchargement obtenue:', downloadURL);
+      
       return downloadURL;
     } catch (error) {
       console.error("Erreur lors de l'upload ou de la récupération de l'URL :", error);
-      throw error;
+      
+      // Afficher un message d'erreur plus spécifique
+      if (error instanceof Error) {
+        if (error.message.includes('storage/unauthorized')) {
+          throw new Error('Erreur d\'autorisation. Vérifiez les règles de stockage Firebase.');
+        } else if (error.message.includes('storage/quota-exceeded')) {
+          throw new Error('Quota de stockage dépassé.');
+        } else if (error.message.includes('storage/network-request-failed')) {
+          throw new Error('Erreur de réseau. Vérifiez votre connexion internet.');
+        }
+      }
+      
+      throw new Error('Erreur lors de l\'upload de l\'image. Veuillez réessayer.');
     }
   };
 
   // Gestion des champs image
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      setImageFile(event.target.files[0]);
+      const file = event.target.files[0];
+      
+      // Vérifier que c'est bien une image
+      if (!file.type.startsWith('image/')) {
+        alert('Veuillez sélectionner un fichier image valide.');
+        return;
+      }
+      
+      // Vérifier la taille du fichier (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('La taille du fichier ne doit pas dépasser 5MB.');
+        return;
+      }
+      
+      setImageFile(file);
     }
   };
 
@@ -115,6 +149,8 @@ function ProfilePage() {
 
   // Calcul du taux de remplissage
   const calculateCompletionPercentage = () => {
+    if (!profileData) return 0;
+    
     const fields = [
       profileData.firstName,
       profileData.age,
@@ -122,8 +158,8 @@ function ProfilePage() {
       profileData.gender,
       profileData.relationshipType,
       profileData.partnerGender,
-      profileData.partnerAgeRange.min,
-      profileData.partnerAgeRange.max,
+      profileData.partnerAgeRange?.min,
+      profileData.partnerAgeRange?.max,
       bio,
       profileData.imageURL,
       ...selectedInterests
@@ -140,22 +176,41 @@ function ProfilePage() {
     e.preventDefault();
     if (user) {
       try {
+        setLoading(true);
         const completionPercentage = calculateCompletionPercentage();
+
+        // Créer une copie des données du profil
+        let updatedProfileData = { ...profileData };
 
         // Upload de l'image si présente
         if (imageFile) {
           const ext = imageFile.name.split('.').pop();
           const imageName = `teaseyou-${fileCounter}.${ext}`;
           const imageURL = await uploadFile(imageFile, `images/profiles/${user.uid}/${imageName}`);
-          profileData.imageURL = imageURL;
+          updatedProfileData.imageURL = imageURL;
           setFileCounter(fileCounter + 1);
         }
 
-        // Mise à jour Firestore
-        await updateUserProfile(user.uid, { ...profileData, bio, interests: selectedInterests, completionPercentage });
+        // Mise à jour Firestore avec les nouvelles données
+        await updateUserProfile(user.uid, { 
+          ...updatedProfileData, 
+          bio, 
+          interests: selectedInterests, 
+          completionPercentage 
+        });
+
+        // Mettre à jour l'état local
+        setProfileData(updatedProfileData);
+        
+        // Réinitialiser le fichier image
+        setImageFile(null);
+        
         router.push('/');
       } catch (error) {
         console.error("Erreur lors de l'enregistrement du profil :", error);
+        alert("Erreur lors de la sauvegarde du profil. Veuillez réessayer.");
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -371,12 +426,63 @@ function ProfilePage() {
           {/* Photo de Profil */}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold text-[#FF5F6D] mb-4">Photo de Profil</h2>
+            
+            {/* Afficher l'image actuelle si elle existe */}
+            {profileData?.imageURL && (
+              <div className="mb-4">
+                <img 
+                  src={profileData.imageURL} 
+                  alt="Photo de profil actuelle" 
+                  className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300"
+                />
+                <p className="text-sm text-gray-600 mt-2">Photo actuelle</p>
+              </div>
+            )}
+            
+            {/* Afficher la nouvelle image sélectionnée */}
+            {imageFile && (
+              <div className="mb-4">
+                <img 
+                  src={URL.createObjectURL(imageFile)} 
+                  alt="Nouvelle photo sélectionnée" 
+                  className="w-32 h-32 object-cover rounded-lg border-2 border-green-300"
+                />
+                <p className="text-sm text-green-600 mt-2">Nouvelle photo sélectionnée</p>
+              </div>
+            )}
+            
             <input
               type="file"
               accept="image/*"
               onChange={handleImageChange}
               className="file-input w-full bg-gray-50 border-gray-300 focus:border-[#E63946] focus:ring-[#E63946]"
             />
+            <p className="text-sm text-gray-500 mt-2">
+              Sélectionnez une nouvelle photo pour remplacer l'actuelle
+            </p>
+            
+            {/* Bouton de test pour vérifier l'upload */}
+            {imageFile && (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    console.log('Test d\'upload...');
+                    const ext = imageFile.name.split('.').pop();
+                    const imageName = `test-${Date.now()}.${ext}`;
+                    const imageURL = await uploadFile(imageFile, `images/profiles/${user?.uid}/${imageName}`);
+                    console.log('Test d\'upload réussi:', imageURL);
+                    alert('Test d\'upload réussi !');
+                  } catch (error) {
+                    console.error('Test d\'upload échoué:', error);
+                    alert('Test d\'upload échoué: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
+                  }
+                }}
+                className="btn btn-sm bg-blue-500 text-white mt-2"
+              >
+                Tester l'upload
+              </button>
+            )}
           </div>
 
           {/* Mon Teaser */}
@@ -406,8 +512,13 @@ function ProfilePage() {
             <button
               className="btn btn-circle bg-[#E63946] text-white"
               onClick={handleSaveProfile}
+              disabled={loading}
             >
-              <span className="material-icons">check</span>
+              {loading ? (
+                <span className="material-icons animate-spin">refresh</span>
+              ) : (
+                <span className="material-icons">check</span>
+              )}
             </button>
           </div>
         </form>
